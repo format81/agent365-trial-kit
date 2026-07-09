@@ -1,0 +1,25 @@
+{
+  "//": "Template for the Agent 365 CLI (a365) configuration file.",
+  "//preview": "Microsoft Agent 365 is in PREVIEW. Fields may change between CLI versions. Run 'a365 setup all -h' to confirm the current schema.",
+  "//usage": "01-Select-AzureContext.ps1 fills tenantId/subscriptionId/resourceGroup and derives the display names, then writes a365.config.json.",
+
+  "agentName": "<AGENT_BASE_NAME>",
+  "agentIdentityDisplayName": "<AGENT_BASE_NAME> Identity",
+  "agentBlueprintDisplayName": "<AGENT_BASE_NAME> Blueprint",
+  "agentDescription": "<AGENT_BASE_NAME> - LangChain agent onboarded to Agent 365.",
+  "environment": "prod",
+
+  "tenantId": "<TENANT_ID>",
+  "subscriptionId": "<SUBSCRIPTION_ID>",
+  "resourceGroup": "<RESOURCE_GROUP>",
+  "location": "<AZURE_REGION>",
+
+  "//deploymentProjectPath": "Path to the agent project that gets deployed to Azure App Service.",
+  "deploymentProjectPath": "./",
+
+  "//authMode": "obo = delegated (default, no admin role) | s2s = app permissions | both",
+  "authMode": "obo",
+
+  "//messagingEndpoint": "HTTPS URL where the deployed agent receives messages. Known only AFTER first deploy; register later with 'a365 setup blueprint --endpoint-only'.",
+  "messagingEndpoint": ""
+}

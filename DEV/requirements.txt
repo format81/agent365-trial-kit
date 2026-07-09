@@ -1,0 +1,31 @@
+# ---------------------------------------------------------------------------
+# Python dependencies for the LangChain agent hosted on Azure App Service and
+# onboarded to Microsoft Agent 365.
+#
+# NOTE: Microsoft Agent 365 SDK packages are in PREVIEW. Names/versions may
+# change. Pin exact versions before shipping to production.
+# ---------------------------------------------------------------------------
+
+# --- Agent logic (LangChain) ---
+langchain>=0.3,<0.4
+langchain-openai>=0.2,<0.3
+
+# --- Web host for Azure App Service ---
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+pydantic>=2.7,<3.0
+python-dotenv>=1.0,<2.0
+
+# --- Azure identity (keyless Entra ID auth for Azure OpenAI + App Service MI) ---
+# Enables DefaultAzureCredential: uses 'az login' locally and Managed Identity
+# when hosted on Azure App Service. Required for AZURE_OPENAI_AUTH_MODE=entra.
+azure-identity>=1.17,<2.0
+
+# --- Microsoft Agent 365 SDK (PREVIEW) ---
+# Adds Entra-backed agent identity, notifications and OpenTelemetry-based
+# observability on top of any agent framework (including LangChain).
+# Uncomment once you have access to the preview feed.
+# microsoft-agents-a365
+# microsoft-agents-hosting-aiohttp
+# azure-monitor-opentelemetry
+# opentelemetry-instrumentation-langchain
