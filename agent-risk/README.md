@@ -1,4 +1,4 @@
-# OB4 — Confirm an Entra Agent Identity as compromised
+# Confirm an Entra Agent Identity as compromised
 
 A small, self-contained PowerShell utility that marks one or more Microsoft
 **Entra Agent Identities** as **"Admin confirmed agent compromised"** using the

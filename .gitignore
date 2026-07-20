@@ -1,5 +1,5 @@
 # ===========================================================================
-# .gitignore for the Agent 365 Trial repository (root = Agent365-Trial/)
+# .gitignore for the Agent 365 Trial repository (root = agent365-trial-kit/)
 # Protects secrets and generated/local artifacts from being committed.
 # ===========================================================================
 

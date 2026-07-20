@@ -17,6 +17,27 @@ you can reproduce the whole flow for **testing, demos, or PoCs**.
 
 ---
 
+## 11 Days of Agent 365 (series companion)
+
+A hands-on, personal project — not official Microsoft content. Every scenario tested on my own tenant. Preview features may change.
+
+| Day | Date | Topic | Folder | Post |
+|-----|------|-------|--------|------|
+| 1 | Tue 21 Jul | One registry, and the map of what agents touch | [days/day-01-registry-map/](days/day-01-registry-map/) | _coming 21 Jul_ |
+| 2 | Wed 22 Jul | Agents at risk, ownerless agents, the rule that stops the drift | [days/day-02-agents-at-risk/](days/day-02-agents-at-risk/) | _coming 22 Jul_ |
+| 3 | Thu 23 Jul | Salesforce Agentforce, and the AI nobody approved | [days/day-03-agentforce-shadow-ai/](days/day-03-agentforce-shadow-ai/) | _coming 23 Jul_ |
+| 4 | Fri 24 Jul | Blueprints & approvals — governance that ships with the agent | [days/day-04-blueprints-approvals/](days/day-04-blueprints-approvals/) | _coming 24 Jul_ |
+| 5 | Sat 25 Jul | Purview audit & DSPM — the evidence a regulator asks for | [days/day-05-purview-audit-dspm/](days/day-05-purview-audit-dspm/) | _coming 25 Jul_ |
+| 6 | Sun 26 Jul | DLP & sensitivity labels — two assumptions that fail | [days/day-06-dlp-labels/](days/day-06-dlp-labels/) | _coming 26 Jul_ |
+| 7 | Mon 27 Jul | Entra Agent ID, Conditional Access, a compromised agent | [days/day-07-entra-conditional-access/](days/day-07-entra-conditional-access/) | _coming 27 Jul_ |
+| 8 | Tue 28 Jul | Defender — block the tool call, then hunt the behaviour | [days/day-08-defender-hunt/](days/day-08-defender-hunt/) | _coming 28 Jul_ |
+| 9 | Wed 29 Jul | Agent 365 SDK — onboarding a LangChain agent | [days/day-09-agent-sdk/](days/day-09-agent-sdk/) | _coming 29 Jul_ |
+| 10 | Thu 30 Jul | Bring your own remote MCP server, kept governed | [days/day-10-byo-mcp/](days/day-10-byo-mcp/) | _coming 30 Jul_ |
+
+Pillars: **Days 1–3 Observe** · **Days 4–6 Govern** · **Days 7–8 Secure** · **Days 9–10 Dev**.
+
+---
+
 ## Why this exists
 
 Microsoft Agent 365 turns fragmented AI-agent experimentation into governed,
@@ -50,8 +71,8 @@ don't have to piece it together from docs:
 ## Repository layout
 
 ```
-Agent365-Trial/
-├─ README.md                     # you are here (overview + publishing guide)
+agent365-trial-kit/
+├─ README.md                     # you are here (overview + two independent tracks)
 ├─ LICENSE                       # MIT
 ├─ .gitignore                    # protects secrets & generated artifacts
 │
@@ -64,7 +85,7 @@ Agent365-Trial/
 │  ├─ src/                       # LangChain agent + FastAPI host + config
 │  └─ scripts/                   # numbered PowerShell automation (00 → 06)
 │
-└─ OB4/                          # Entra Agent ID security utility
+└─ agent-risk/                   # Entra Agent Identity risk / compromise utility
    ├─ README.md
    └─ Confirm-AgentCompromised.ps1   # mark an Agent Identity as compromised
 ```
@@ -74,7 +95,7 @@ Two independent tracks — use either or both:
 | Track | What it does | Start at |
 |-------|--------------|----------|
 | **DEV** | Build a LangChain agent, deploy to Azure App Service, onboard to Agent 365 (blueprint, permissions, registration, publish). | [DEV/README.md](DEV/README.md) |
-| **OB4** | Confirm one or more Entra **Agent Identities** as *compromised* via the Microsoft Graph `riskyAgents` API (Entra ID Protection). | [OB4/README.md](OB4/README.md) |
+| **Agent risk** | Confirm one or more Entra **Agent Identities** as *compromised* via the Microsoft Graph `riskyAgents` API (Entra ID Protection). | [agent-risk/README.md](agent-risk/README.md) |
 
 ---
 
@@ -87,7 +108,7 @@ Two independent tracks — use either or both:
 - An **Azure OpenAI** resource + a chat model deployment (e.g. `gpt-4o` / `gpt-4.1`)
 - **Entra roles**: *Agent ID Developer* (blueprint) and, for admin consent,
   *Global Administrator*; Azure *Contributor* for App Service provisioning
-- For the OB4 utility: **Entra ID Protection (P2)** + *Security Administrator*
+- For the Entra Agent Identity risk utility: **Entra ID Protection (P2)** + *Security Administrator*
 
 The `00-Prerequisites.ps1` script checks and can install most of these.
 
@@ -132,56 +153,6 @@ exposed as automatable APIs in the supported Agent 365 flow:
 
 References: [Publish agent](https://learn.microsoft.com/en-us/microsoft-agent-365/developer/publish) ·
 [Create agent instances](https://learn.microsoft.com/en-us/microsoft-agent-365/developer/create-instance).
-
----
-
-## Publishing this to your own GitHub
-
-See the step-by-step in [How to publish to GitHub](#how-to-publish-to-github)
-below. In short: this folder is already a self-contained repo root with a safe
-`.gitignore`.
-
-### Suggested repository names
-
-- **`agent365-trial-kit`** *(this repo)*
-- `agent365-langchain-lab`
-- `entra-agent-id-langchain-poc`
-
-### How to publish to GitHub
-
-> Do this **from the `Agent365-Trial` folder** so it becomes the repo root.
-> Contribution guidelines live in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-1. **Confirm no secrets will be committed.** The `.gitignore` already excludes
-   `.env`, `a365.config.json`, `a365.generated.config.json`, and `manifest/`.
-   Double-check:
-   ```powershell
-   cd C:\_F0rm4tC0de\MCPLabs\Agent365-Trial
-   git init
-   git add -A
-   git status            # verify .env / *.config.json / manifest/ are NOT listed
-   ```
-   If you ever see a secret staged, run `git rm --cached <file>` before committing.
-
-2. **First commit:**
-   ```powershell
-   git commit -m "Initial commit: Agent 365 LangChain onboarding toolkit"
-   git branch -M main
-   ```
-
-3. **Create the empty repo on GitHub and push:**
-   ```powershell
-   # Option A - GitHub CLI (if installed):
-   gh repo create agent365-trial-kit --public --source . --remote origin --push
-
-   # Option B - manual: create the repo on github.com (no README), then:
-   git remote add origin https://github.com/format81/agent365-trial-kit.git
-   git push -u origin main
-   ```
-
-4. **Rotate the demo secret.** If you ever ran the DEV flow, a blueprint client
-   secret was generated locally. It is git-ignored, but if you suspect it was
-   exposed, rotate it: `a365 setup blueprint --show-secret` to view / regenerate.
 
 ---
 

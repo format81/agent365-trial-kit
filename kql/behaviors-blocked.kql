@@ -1,0 +1,12 @@
+// ===========================================================================
+// behaviors-blocked.kql  —  Day 8 (Defender advanced hunting)
+// Verified against Microsoft Defender advanced hunting on 20 Jul 2026.
+// AIAgentsInfo was retired 1 July 2026 — use AgentsInfo.
+// ===========================================================================
+//
+// TODO: build the BehaviorInfo query that surfaces blocked agent behaviours.
+//
+// BehaviorInfo
+// | where Timestamp > ago(7d)
+// | // TODO: filter to AI-agent behaviours and blocked/prevented actions
+// | // TODO: project the fields shown in the post

@@ -1,0 +1,12 @@
+// ===========================================================================
+// tool-invocations.kql  —  Day 8 (Defender advanced hunting)
+// Verified against Microsoft Defender advanced hunting on 20 Jul 2026.
+// AIAgentsInfo was retired 1 July 2026 — use AgentsInfo.
+// ===========================================================================
+//
+// TODO: build the CloudAppEvents query that surfaces agent tool invocations.
+//
+// CloudAppEvents
+// | where Timestamp > ago(7d)
+// | // TODO: filter to agent tool/API calls of interest
+// | // TODO: project the fields shown in the post

@@ -62,7 +62,7 @@ Short, imperative, scoped — e.g.:
 ```
 deploy: enable Oryx build before zip deploy
 docs: clarify manual governance upload step
-ob4: add -CheckOnly summary line
+agent-risk: add -CheckOnly summary line
 ```
 
 ## Pull request checklist
