@@ -24,7 +24,7 @@ A hands-on, personal project — not official Microsoft content. Every scenario 
 | Day | Date | Topic | Folder | Post |
 |-----|------|-------|--------|------|
 | 1 | Tue 21 Jul | One registry, and the map of what agents touch | [days/day-01-registry-map/](days/day-01-registry-map/) | [LinkedIn](https://www.linkedin.com/posts/antonioformato_11daysofagent365-agent365-aisecurity-ugcPost-7485242937346424833-nh3R/) |
-| 2 | Wed 22 Jul | Agents at risk, ownerless agents, the rule that stops the drift | [days/day-02-agents-at-risk/](days/day-02-agents-at-risk/) | _coming 22 Jul_ |
+| 2 | Wed 22 Jul | Agents at risk, ownerless agents, the rule that stops the drift | [days/day-02-agents-at-risk/](days/day-02-agents-at-risk/) | [LinkedIn](https://www.linkedin.com/feed/update/urn:li:ugcPost:7485620881965277184/) |
 | 3 | Thu 23 Jul | Salesforce Agentforce, and the AI nobody approved | [days/day-03-agentforce-shadow-ai/](days/day-03-agentforce-shadow-ai/) | _coming 23 Jul_ |
 | 4 | Fri 24 Jul | Blueprints & approvals — governance that ships with the agent | [days/day-04-blueprints-approvals/](days/day-04-blueprints-approvals/) | _coming 24 Jul_ |
 | 5 | Sat 25 Jul | Purview audit & DSPM — the evidence a regulator asks for | [days/day-05-purview-audit-dspm/](days/day-05-purview-audit-dspm/) | _coming 25 Jul_ |
