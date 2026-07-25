@@ -1,4 +1,4 @@
-# Agent 365 Trial — LangChain agent onboarding & Entra Agent ID toolkit
+# 11 Days of Agent 365 — real-world use cases to observe, govern and secure AI agents
 
 Hands-on, reusable scripts and a sample agent that show how to build an AI agent,
 host it on Azure, and onboard it to **Microsoft Agent 365** so it becomes a
@@ -26,8 +26,8 @@ A hands-on, personal project — not official Microsoft content. Every scenario 
 | 1 | Tue 21 Jul | One registry, and the map of what agents touch | [days/day-01-registry-map/](days/day-01-registry-map/) | [LinkedIn](https://www.linkedin.com/posts/antonioformato_11daysofagent365-agent365-aisecurity-ugcPost-7485242937346424833-nh3R/) |
 | 2 | Wed 22 Jul | Agents at risk, ownerless agents, the rule that stops the drift | [days/day-02-agents-at-risk/](days/day-02-agents-at-risk/) | [LinkedIn](https://www.linkedin.com/feed/update/urn:li:ugcPost:7485620881965277184/) |
 | 3 | Thu 23 Jul | Salesforce Agentforce, and the AI nobody approved | [days/day-03-agentforce-shadow-ai/](days/day-03-agentforce-shadow-ai/) | [LinkedIn](https://www.linkedin.com/posts/antonioformato_11daysofagent365-agent365-aisecurity-ugcPost-7485975126199619584-jfvB/) |
-| 4 | Fri 24 Jul | Blueprints & approvals — governance that ships with the agent | [days/day-04-blueprints-approvals/](days/day-04-blueprints-approvals/) | _coming 24 Jul_ |
-| 5 | Sat 25 Jul | Purview audit & DSPM — the evidence a regulator asks for | [days/day-05-purview-audit-dspm/](days/day-05-purview-audit-dspm/) | _coming 25 Jul_ |
+| 4 | Fri 24 Jul | Blueprints & approvals — governance that ships with the agent | [days/day-04-blueprints-approvals/](days/day-04-blueprints-approvals/) | [LinkedIn](https://www.linkedin.com/posts/antonioformato_11daysofagent365-agent365-aisecurity-ugcPost-7486328753166565376-a0VW/) |
+| 5 | Sat 25 Jul | Purview audit & DSPM — the evidence a regulator asks for | [days/day-05-purview-audit-dspm/](days/day-05-purview-audit-dspm/) | [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:7486679269608452098/) |
 | 6 | Sun 26 Jul | DLP & sensitivity labels — two assumptions that fail | [days/day-06-dlp-labels/](days/day-06-dlp-labels/) | _coming 26 Jul_ |
 | 7 | Mon 27 Jul | Entra Agent ID, Conditional Access, a compromised agent | [days/day-07-entra-conditional-access/](days/day-07-entra-conditional-access/) | _coming 27 Jul_ |
 | 8 | Tue 28 Jul | Defender — block the tool call, then hunt the behaviour | [days/day-08-defender-hunt/](days/day-08-defender-hunt/) | _coming 28 Jul_ |

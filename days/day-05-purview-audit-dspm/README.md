@@ -1,6 +1,6 @@
 # Day 5 — Purview: audit and DSPM, the evidence a regulator asks for
 
-**Govern** · Published 25 Jul · [Read the LinkedIn post](POST_URL_PLACEHOLDER)
+**Govern** · Published 25 Jul · [Read the LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7486679269608452098/)
 
 > Part of [11 Days of Agent 365](../../README.md). Personal project, tested on my own
 > tenant — not official Microsoft content. Preview features may change.
