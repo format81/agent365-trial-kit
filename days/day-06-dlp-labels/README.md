@@ -1,12 +1,12 @@
 # Day 6 — Purview DLP: one engine for users and agents
 
-**Govern** · Published 26 Jul · [Read the LinkedIn post](POST_URL_PLACEHOLDER)
+**Govern** · Published 26 Jul · [Read the LinkedIn post](https://www.linkedin.com/posts/antonioformato_11daysofagent365-purview-dlp-ugcPost-7487037887352299520-5qsb/)
 
 > Part of [11 Days of Agent 365](../../README.md). Personal project, tested on my own
 > tenant — not official Microsoft content. Preview features may change.
 
 ## Walkthrough
-▶️ [Watch on LinkedIn](POST_URL_PLACEHOLDER) · [Download the recording](assets/agent365-dlp-loop.mp4)
+▶️ [Watch on LinkedIn](https://www.linkedin.com/posts/antonioformato_11daysofagent365-purview-dlp-ugcPost-7487037887352299520-5qsb/) · [Download the recording](assets/agent365-dlp-loop.mp4)
 
 ## The problem
 An agent is the fastest data-exfiltration path in the tenant — it reads, summarizes and
