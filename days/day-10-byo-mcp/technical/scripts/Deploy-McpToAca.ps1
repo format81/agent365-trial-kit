@@ -173,6 +173,17 @@ else {
 $loginServer = "$AcrName.azurecr.io"
 $image = "$loginServer/${ImageName}:${ImageTag}"
 
+# Pull with the ACR admin credentials. Passing --registry-server on its own
+# makes the containerapp extension default to a managed identity that has no
+# AcrPull role, which fails with "unable to pull image using Managed identity".
+Write-Step "Fetching ACR admin credentials"
+$acrUser = az acr credential show --name $AcrName --query username -o tsv
+$acrPass = az acr credential show --name $AcrName --query "passwords[0].value" -o tsv
+if (-not $acrUser -or -not $acrPass) {
+    throw "Could not read ACR admin credentials for '$AcrName'. Ensure admin is enabled."
+}
+Write-Ok "Got ACR admin credentials."
+
 Write-Step "Container App '$AppName'"
 $appExists = az containerapp show --name $AppName --resource-group $ResourceGroup 2>$null
 if (-not $appExists) {
@@ -180,11 +191,15 @@ if (-not $appExists) {
         "--resource-group", $ResourceGroup, "--environment", $EnvName,
         "--image", $image, "--target-port", "3000", "--ingress", "external",
         "--registry-server", $loginServer,
+        "--registry-username", $acrUser, "--registry-password", $acrPass,
         "--min-replicas", "1", "--max-replicas", "3",
         "--cpu", "0.5", "--memory", "1.0Gi")
     Write-Ok "Created Container App."
 }
 else {
+    Invoke-Native "az" @("containerapp", "registry", "set", "--name", $AppName,
+        "--resource-group", $ResourceGroup, "--server", $loginServer,
+        "--username", $acrUser, "--password", $acrPass)
     Invoke-Native "az" @("containerapp", "update", "--name", $AppName,
         "--resource-group", $ResourceGroup, "--image", $image)
     Write-Ok "Updated Container App to new image."
