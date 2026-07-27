@@ -69,21 +69,62 @@ dotnet tool update --global Microsoft.Agents.A365.DevTools.Cli
 a365 --version   # must be >= 1.1.165-preview
 ```
 
+## The end-to-end flow at a glance
+
+> [!IMPORTANT]
+> **Azure deploy and Agent 365 registration are two separate steps** — by
+> design. The deploy script uses the **Azure CLI (`az`)** to create resources.
+> Registration uses the **Agent 365 CLI (`a365`)**: a different tool, a
+> different login, different roles, and it needs the `/mcp` URL that only exists
+> *after* the deploy. Approval is then a **manual admin action** in the
+> Microsoft 365 admin center. The only link between the two is
+> `scripts/last-deploy.json` (written by deploy, read by cleanup). The deploy
+> script prints the ready-to-paste `a365` command for you at the end.
+
+```
+[1] Deploy-McpToAca.ps1  --(az)-->  public https://<fqdn>/mcp
+         │
+[2] a365 develop-mcp register-external-mcp-server  --(a365, separate)-->  pending request
+         │
+[3] Approve in M365 admin center  (manual, admin)
+         │
+[4] Use in Copilot Studio / VS Code / Claude Code / Copilot CLI
+         │
+[5] Cleanup-McpAca.ps1 (Azure)  +  Block in admin center
+```
+
 ## 1. Deploy to Azure
+
+From the repo root:
 
 ```powershell
 cd days/day-10-byo-mcp/technical/scripts
-./Deploy-McpToAca.ps1
+az login                      # once, if not already signed in
+./Deploy-McpToAca.ps1 -ResourceGroup "rg-prism-mcp" -Location "swedencentral"
 ```
 
-Optional parameters:
+With an explicit subscription (if you have more than one):
 
 ```powershell
 ./Deploy-McpToAca.ps1 `
-  -ResourceGroup rg-prism-mcp `
-  -Location westeurope `
-  -SubscriptionId <sub-guid>
+  -ResourceGroup "rg-prism-mcp" `
+  -Location "swedencentral" `
+  -SubscriptionId "<sub-guid>"
 ```
+
+Run with no parameters to accept every default (`rg-prism-mcp` / `westeurope`).
+
+### Parameters
+
+| Parameter | Default | Purpose |
+|-----------|---------|---------|
+| `-ResourceGroup` | `rg-prism-mcp` | Resource group to create/use |
+| `-Location` | `westeurope` | Azure region (e.g. `swedencentral`, `eastus`) |
+| `-SubscriptionId` | current `az` context | Subscription to target |
+| `-AcrName` | auto-generated unique | ACR name — leave it to auto-generate |
+| `-EnvName` | `cae-prism-mcp` | Container Apps environment name |
+| `-AppName` | `ca-prism-employee-mcp` | Container App name |
+| `-ImageTag` | `v1` | Image tag to build/deploy |
 
 The script:
 
@@ -110,10 +151,19 @@ Verify:
 curl https://<fqdn>/health   # -> {"status":"ok"}
 ```
 
-## 2. Register with Agent 365 (developer)
+## 2. Register with Agent 365 (developer) — separate step
 
-The PRISM server is **NoAuth**, so use the `NoAuth` registration. Replace the
-URL with your deployed `/mcp` endpoint:
+This is **not** part of the deploy script. Run it yourself after the deploy,
+using the URL the script printed. First sign in with the Agent 365 CLI (this is
+a different login from `az`):
+
+```powershell
+a365 login
+a365 --version   # must be >= 1.1.165-preview
+```
+
+The PRISM server is **NoAuth**, so use the `NoAuth` registration. Replace
+`<fqdn>` with your deployed endpoint (the script printed the full command):
 
 ```powershell
 a365 develop-mcp register-external-mcp-server `

@@ -28,13 +28,16 @@ This day ships a complete, reproducible sample: a fictional **PRISM Employee
 Directory** MCP server you deploy to Azure Container Apps and register with
 Agent 365.
 
-1. **Deploy to Azure** (builds the image in ACR — no local Docker/Node needed):
+1. **Deploy to Azure** (builds the image in ACR — no local Docker/Node needed).
+   Pass your resource group and region as parameters:
    ```powershell
    cd days/day-10-byo-mcp/technical/scripts
-   ./Deploy-McpToAca.ps1
+   ./Deploy-McpToAca.ps1 -ResourceGroup "rg-prism-mcp" -Location "swedencentral"
    ```
-   You get a public `https://<fqdn>/mcp` endpoint.
-2. **Register** it with Agent 365 (developer, `a365` CLI ≥ 1.1.165-preview):
+   You get a public `https://<fqdn>/mcp` endpoint, and the script prints the
+   ready-to-paste `a365` command below.
+2. **Register** it with Agent 365 — a **separate step** (different CLI, needs the
+   URL from step 1), developer, `a365` CLI ≥ 1.1.165-preview:
    ```powershell
    a365 develop-mcp register-external-mcp-server `
      --server-name "PRISM-EmployeeDirectory" `
