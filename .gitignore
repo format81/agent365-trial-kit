@@ -11,6 +11,12 @@
 *.egg-info/
 .pytest_cache/
 
+# --- Node.js (Day 10 BYO MCP server) ---
+# NOTE: package-lock.json IS committed for reproducible Docker builds (npm ci).
+**/node_modules/
+# Local deployment state written by Deploy-McpToAca.ps1 (contains sub/RG names)
+**/last-deploy.json
+
 # --- Secrets & local configuration (NEVER COMMIT) ---
 # Real environment file with keys / stamped client secrets
 **/.env
