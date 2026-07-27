@@ -1,12 +1,12 @@
 # Day 7 — Entra Agent ID, Conditional Access, and a compromised agent
 
-**Secure** · Published 27 Jul · [Read the LinkedIn post](POST_URL_PLACEHOLDER)
+**Secure** · Published 27 Jul · [Read the LinkedIn post](https://www.linkedin.com/posts/antonioformato_11daysofagent365-entraagentid-conditionalaccess-ugcPost-7487431768766177280-hfIk/)
 
 > Part of [11 Days of Agent 365](../../README.md). Personal project, tested on my own
 > tenant — not official Microsoft content. Preview features may change.
 
 ## Walkthrough
-▶️ [Watch on LinkedIn](POST_URL_PLACEHOLDER) · [Download the recording](assets/agent365-ca-block-demo.mp4)
+▶️ [Watch on LinkedIn](https://www.linkedin.com/posts/antonioformato_11daysofagent365-entraagentid-conditionalaccess-ugcPost-7487431768766177280-hfIk/) · [Download the recording](assets/agent365-ca-block-demo.mp4)
 
 ## The problem
 You can't apply Zero Trust to a nameless process. Once agents start acting inside your
