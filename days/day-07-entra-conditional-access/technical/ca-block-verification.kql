@@ -1,0 +1,22 @@
+// Verify a Conditional Access policy blocked an agent identity.
+// Replace <AGENT-OBJECT-ID> with your agent's Entra object/app ID.
+// Run in Microsoft Defender > Advanced hunting (or Sentinel).
+// Result 53003 = blocked by Conditional Access.
+let TargetId = "<AGENT-OBJECT-ID>";
+AADServicePrincipalSignInLogs
+| where TimeGenerated > ago(7d)
+| where AppId == TargetId
+| extend caArray = todynamic(ConditionalAccessPolicies)
+| mv-expand ca = caArray
+| extend caName    = tostring(ca.displayName),
+         caResult  = tostring(ca.result),
+         caGrant   = tostring(ca.enforcedGrantControls),
+         caSession = tostring(ca.enforcedSessionControls)
+| project TimeGenerated,
+          ServicePrincipalName,
+          Esito    = iff(ResultType == 0, "Success",
+                     iff(ResultType == 53003, "BLOCKED by CA", strcat("Fail ", tostring(ResultType)))),
+          caName, caResult, caGrant,
+          ResultType, ResultDescription, IPAddress
+| where caResult in ("failure","success")
+| sort by TimeGenerated desc, caResult asc
