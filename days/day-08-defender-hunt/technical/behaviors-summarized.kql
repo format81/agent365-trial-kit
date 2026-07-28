@@ -1,0 +1,10 @@
+// Summarize AI/agent behaviours by type — e.g. BehaviorPromptShieldJailbreakBlock.
+BehaviorInfo
+| where Timestamp > ago(7d)
+| where Categories has_any ("Exfiltration", "InitialAccess", "Collection", "AI")
+     or Description has_any ("agent", "Copilot", "prompt", "tool")
+| summarize Count = count(),
+            Techniques = make_set(AttackTechniques),
+            LastSeen = max(Timestamp)
+        by ActionType, Categories, DetectionSource, AccountUpn
+| sort by LastSeen desc

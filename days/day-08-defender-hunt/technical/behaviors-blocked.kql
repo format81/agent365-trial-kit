@@ -1,0 +1,8 @@
+// Behaviours recorded by Defender — what was flagged/blocked and why.
+// Real-time protection writes blocked/audited agent activity here as behaviours (not only alerts).
+BehaviorInfo
+| where Timestamp > ago(7d)
+| project Timestamp, ActionType, Description, Categories,
+          AttackTechniques, ServiceSource, DetectionSource,
+          AccountUpn, AccountObjectId
+| sort by Timestamp desc

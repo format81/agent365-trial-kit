@@ -1,0 +1,19 @@
+// Agent inventory from AgentsInfo — latest snapshot per agent.
+// NOTE: AgentsInfo is preview; the documented schema and the populated schema can differ.
+// Name is resolved defensively (column_ifexists + RawAgentInfo fallback) so the query
+// does not fail if a column is absent in your tenant.
+// AIAgentsInfo was retired for AgentsInfo on 1 July 2026 — use AgentsInfo.
+AgentsInfo
+| summarize arg_max(Timestamp, *) by AgentId
+| where LifecycleStatus != "Deleted"
+| extend Raw = todynamic(RawAgentInfo)
+| extend AgentDisplayName = coalesce(
+        tostring(column_ifexists("AgentName", "")),
+        tostring(column_ifexists("Name", "")),
+        tostring(column_ifexists("DisplayName", "")),
+        tostring(Raw.name),
+        tostring(Raw.displayName),
+        tostring(Raw.agentName))
+| project AgentDisplayName, AgentId, Platform, LifecycleStatus,
+          PublishedStatus, LastUpdatedDateTime
+| sort by LastUpdatedDateTime desc
