@@ -30,7 +30,7 @@ A hands-on, personal project — not official Microsoft content. Every scenario 
 | 5 | Sat 25 Jul | Purview audit & DSPM — the evidence a regulator asks for | [days/day-05-purview-audit-dspm/](days/day-05-purview-audit-dspm/) | [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:7486679269608452098/) |
 | 6 | Sun 26 Jul | DLP & sensitivity labels — two assumptions that fail | [days/day-06-dlp-labels/](days/day-06-dlp-labels/) | [LinkedIn](https://www.linkedin.com/posts/antonioformato_11daysofagent365-purview-dlp-ugcPost-7487037887352299520-5qsb/) |
 | 7 | Mon 27 Jul | Entra Agent ID, Conditional Access, a compromised agent | [days/day-07-entra-conditional-access/](days/day-07-entra-conditional-access/) | [LinkedIn](https://www.linkedin.com/posts/antonioformato_11daysofagent365-entraagentid-conditionalaccess-ugcPost-7487431768766177280-hfIk/) |
-| 8 | Tue 28 Jul | Defender — block the tool call, then hunt the behaviour | [days/day-08-defender-hunt/](days/day-08-defender-hunt/) | _coming 28 Jul_ |
+| 8 | Tue 28 Jul | Defender — block the tool call, then hunt the behaviour | [days/day-08-defender-hunt/](days/day-08-defender-hunt/) | [LinkedIn](https://www.linkedin.com/posts/antonioformato_11daysofagent365-defenderxdr-threathunting-ugcPost-7487777291880566784-NfUz/) |
 | 9 | Wed 29 Jul | Agent 365 SDK — onboarding a LangChain agent | [days/day-09-agent-sdk/](days/day-09-agent-sdk/) | _coming 29 Jul_ |
 | 10 | Thu 30 Jul | Bring your own remote MCP server, kept governed | [days/day-10-byo-mcp/](days/day-10-byo-mcp/) | _coming 30 Jul_ |
 

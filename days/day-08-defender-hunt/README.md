@@ -1,6 +1,6 @@
 # Day 8 — Defender: block the tool call, then hunt the behavior
 
-**Secure** · Published 28 Jul · [Read the LinkedIn post](POST_URL_PLACEHOLDER)
+**Secure** · Published 28 Jul · [Read the LinkedIn post](https://www.linkedin.com/posts/antonioformato_11daysofagent365-defenderxdr-threathunting-ugcPost-7487777291880566784-NfUz/)
 
 > Part of [11 Days of Agent 365](../../README.md). Personal project, tested on my own
 > tenant — not official Microsoft content. Preview features may change.
@@ -54,6 +54,19 @@ the MCP servers and tools per agent.
 
 In this run the simulation produced jailbreak / prompt-injection blocks
 (BehaviorPromptShieldJailbreakBlock), LLM reconnaissance, and blocked tool invocations.
+
+## Hunt it with these queries
+The Advanced hunting queries for Day 8 live in [technical/](technical/) — run them in
+**Microsoft Defender › Hunting › Advanced hunting**:
+
+- **[technical/behaviors-blocked.kql](technical/behaviors-blocked.kql)** — lists the raw
+  `BehaviorInfo` blocks/audits (what was flagged, why, and against which account). Start here.
+- **[technical/behaviors-summarized.kql](technical/behaviors-summarized.kql)** — rolls the
+  same behaviours up by type (e.g. `BehaviorPromptShieldJailbreakBlock`) so you can see the
+  shape of what was stopped.
+- **[technical/agents-inventory.kql](technical/agents-inventory.kql)** — the latest snapshot
+  per agent from `AgentsInfo`, with defensive name resolution (`column_ifexists` /
+  `RawAgentInfo` fallback) so it doesn't fail where the preview schema differs.
 
 ## Try it yourself
 1. Enable **Security for AI** and connect the three connectors (Agent 365, Microsoft 365,
