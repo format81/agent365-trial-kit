@@ -1,0 +1,74 @@
+{
+  "agentBlueprintId": "3537898f-8f6d-4811-8046-2ea14016e443",
+  "agentBlueprintObjectId": "3537898f-8f6d-4811-8046-2ea14016e443",
+  "agentBlueprintServicePrincipalObjectId": "6ddd9ad8-5abd-4418-a455-cec27b933777",
+  "agentBlueprintClientSecret": "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAleEe1VXHYEiZ1cB0z48tqAAAAAACAAAAAAAQZgAAAAEAACAAAAAutOls5QXITb+l29/LoGx0JUYwoHBYqC38eYPToOAiywAAAAAOgAAAAAIAACAAAADqrf7n7cxwW94Lnd8vzL9xtM1D22KWPnFPJMWoNvw5ljAAAACi8Fnt8bDQ2HxjbZhrJTAno7GPucYy2gAeqgrQ4CRgmObihu6S/P5DyDk+K3Q+Jz1AAAAAFIk5wCJTa8HfEy7MlpUgl9EpHCFd/dBOd8b+E03Crj8K2WZypL/Voxd9Xf/vOdHSpeVg6hatANbrXDtwRxl8Gg==",
+  "agentBlueprintClientSecretProtected": true,
+  "resourceConsents": [
+    {
+      "resourceName": "Microsoft Graph",
+      "resourceAppId": "00000003-0000-0000-c000-000000000000",
+      "consentGranted": true,
+      "consentTimestamp": "2026-07-28T21:50:05.5889545Z",
+      "scopes": [
+        "Mail.ReadWrite",
+        "Mail.Send",
+        "Chat.ReadWrite",
+        "User.Read.All",
+        "Sites.Read.All",
+        "Files.ReadWrite.All",
+        "ChannelMessage.Read.All",
+        "ChannelMessage.Send"
+      ],
+      "inheritablePermissionsConfigured": true,
+      "inheritablePermissionsAlreadyExist": false
+    },
+    {
+      "resourceName": "Agent 365 Tools",
+      "resourceAppId": "ea9ffc3e-8a23-4a7d-836d-234d7c7565c1",
+      "consentGranted": true,
+      "consentTimestamp": "2026-07-28T21:50:05.5891775Z",
+      "scopes": [
+        "McpServersMetadata.Read.All"
+      ],
+      "inheritablePermissionsConfigured": true,
+      "inheritablePermissionsAlreadyExist": false
+    },
+    {
+      "resourceName": "Messaging Bot API",
+      "resourceAppId": "5a807f24-c9de-44ee-a3a7-329e88a00ffc",
+      "consentGranted": true,
+      "consentTimestamp": "2026-07-28T21:50:42.4928188Z",
+      "scopes": [
+        "AgentData.ReadWrite"
+      ],
+      "inheritablePermissionsConfigured": true,
+      "inheritablePermissionsAlreadyExist": true
+    },
+    {
+      "resourceName": "Observability API",
+      "resourceAppId": "9b975845-388f-4429-889e-eab1ef63949c",
+      "consentGranted": true,
+      "consentTimestamp": "2026-07-28T21:50:42.4929945Z",
+      "scopes": [
+        "Agent365.Observability.OtelWrite"
+      ],
+      "inheritablePermissionsConfigured": true,
+      "inheritablePermissionsAlreadyExist": true
+    },
+    {
+      "resourceName": "Power Platform API",
+      "resourceAppId": "8578e004-a5c6-46e7-913e-12f58912df43",
+      "consentGranted": true,
+      "consentTimestamp": "2026-07-28T21:50:42.4929996Z",
+      "scopes": [
+        "Connectivity.Connections.Read"
+      ],
+      "inheritablePermissionsConfigured": true,
+      "inheritablePermissionsAlreadyExist": true
+    }
+  ],
+  "lastUpdated": "2026-07-28T21:50:42.4957014Z",
+  "cliVersion": "1.1.214.37060",
+  "completed": false
+}
