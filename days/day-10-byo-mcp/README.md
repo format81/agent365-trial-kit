@@ -5,6 +5,9 @@
 > Part of [11 Days of Agent 365](../../README.md). Personal project, tested on my own
 > tenant — not official Microsoft content. Preview features may change.
 
+## Walkthrough
+▶️ [Watch on LinkedIn](POST_URL_PLACEHOLDER) · [Download the recording](assets/agent365-byo-mcp.mp4)
+
 ## The problem
 Enterprises are already building internal **MCP servers** to give their agents
 real capabilities — look up an employee, query a system, take an action. The
@@ -36,6 +39,9 @@ Agent 365.
    ```
    You get a public `https://<fqdn>/mcp` endpoint, and the script prints the
    ready-to-paste `a365` command below.
+
+   ![Deploy-McpToAca deployment complete](assets/01-deploy-container-app.png)
+   *The deploy script builds the image in ACR and prints the ready-to-paste `a365` command.*
 2. **Register** it with Agent 365 — a **separate step** (different CLI, needs the
    URL from step 1), developer, `a365` CLI ≥ 1.1.165-preview:
    ```powershell
@@ -47,8 +53,17 @@ Agent 365.
      --auth-type "NoAuth" `
      --tools "get_employee,list_by_department"
    ```
+
+   ![a365 develop-mcp registration summary](assets/02-register-mcp-server.png)
+   *The CLI confirms the registration with a summary of the declared tools.*
+
+   ![rg-prism-mcp resource group in the Azure portal](assets/03-azure-resources.png)
+   *Supporting view: the Container App and its resources land in the `rg-prism-mcp` resource group.*
 3. **Approve** it (admin): Microsoft 365 admin center → **Agents → Tools →
    Requests** → **Approve** → consent to the Entra permissions.
+
+   ![Admin center Tools Requests showing ext_PRISM-Dir with Approve/Reject](assets/04-admin-approve-request.png)
+   *The admin reviews the declared tools and approves (or rejects) the request.*
 4. **Use it** (Copilot Studio): add the MCP server as a tool and ask
    *"Who is E001 in the Prism directory?"* or *"List everyone in Sales."*
 5. **Monitor** (security): Defender advanced hunting on
@@ -72,7 +87,10 @@ Full step-by-step, prerequisites, and troubleshooting: **[technical/](technical/
   **Block** it instead.
 
 ## What's in this folder
-- `assets/` — screenshots and recordings from the post
+- `assets/` — screenshots and recording from the post: the walkthrough video
+  (`agent365-byo-mcp.mp4`) plus `01-deploy-container-app.png`,
+  `02-register-mcp-server.png`, `03-azure-resources.png`, and
+  `04-admin-approve-request.png`
 - `technical/` — the MCP server source, Dockerfile, deploy/cleanup scripts, and
   the full deploy + governance guide ([technical/README.md](technical/README.md))
 
