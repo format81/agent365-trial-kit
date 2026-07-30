@@ -1,12 +1,12 @@
 # Day 10 — Bring your own remote MCP server, kept governed
 
-**Dev** · Published Thu 30 Jul · [Read the LinkedIn post](POST_URL_PLACEHOLDER)
+**Dev** · Published Thu 30 Jul · [Read the LinkedIn post](https://www.linkedin.com/posts/antonioformato_11daysofagent365-mcp-agent365-ugcPost-7488483484869644288-Vg_k/)
 
 > Part of [11 Days of Agent 365](../../README.md). Personal project, tested on my own
 > tenant — not official Microsoft content. Preview features may change.
 
 ## Walkthrough
-▶️ [Watch on LinkedIn](POST_URL_PLACEHOLDER) · [Download the recording](assets/agent365-byo-mcp.mp4)
+▶️ [Watch on LinkedIn](https://www.linkedin.com/posts/antonioformato_11daysofagent365-mcp-agent365-ugcPost-7488483484869644288-Vg_k/) · [Download the recording](assets/agent365-byo-mcp.mp4)
 
 ## The problem
 Enterprises are already building internal **MCP servers** to give their agents
