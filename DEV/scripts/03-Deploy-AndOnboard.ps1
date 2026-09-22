@@ -162,10 +162,13 @@ if (-not $SkipInfra) {
         $zipPath = Join-Path $env:TEMP "agent365-deploy-$safeName.zip"
         if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
 
-        # Package the deployable files (exclude local/venv artifacts).
-        $items = Get-ChildItem -Path $devRoot -Force |
-            Where-Object { $_.Name -notin @(".venv", "__pycache__", ".env", "scripts") }
-        Compress-Archive -Path $items.FullName -DestinationPath $zipPath -Force
+        # Package the deployable files with forward-slash entry names.
+        # Compress-Archive on Windows writes backslash separators, which Linux/
+        # Oryx treats as literal filenames (no 'src/' package) -> the app fails
+        # at startup with ModuleNotFoundError: No module named 'src'.
+        New-DeploymentZip -SourceDir $devRoot -DestinationPath $zipPath `
+            -Exclude @(".venv", "__pycache__", "scripts", ".git", "node_modules") `
+            -ExcludeFile @(".env") -ExcludeExtension @(".pyc", ".zip")
 
         Invoke-Native "az" @(
             "webapp", "deploy",

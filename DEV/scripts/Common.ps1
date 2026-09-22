@@ -88,3 +88,43 @@ function Read-Selection {
         Write-WarnLine "Enter a number between 0 and $($Count - 1)."
     }
 }
+
+function New-DeploymentZip {
+    <#
+        Creates a zip whose entry names use forward slashes so the archive
+        extracts correctly on Linux / Azure App Service (Oryx). Windows'
+        Compress-Archive writes backslash separators, which Linux treats as
+        literal filename characters - so 'src\app.py' never becomes the 'src'
+        package and the app dies with ModuleNotFoundError: No module named 'src'.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$SourceDir,
+        [Parameter(Mandatory)][string]$DestinationPath,
+        [string[]]$Exclude = @(),
+        [string[]]$ExcludeFile = @(),
+        [string[]]$ExcludeExtension = @()
+    )
+    Add-Type -AssemblyName System.IO.Compression | Out-Null
+    Add-Type -AssemblyName System.IO.Compression.FileSystem | Out-Null
+
+    $rootFull = (Resolve-Path $SourceDir).Path.TrimEnd('\', '/')
+    if (Test-Path $DestinationPath) { Remove-Item $DestinationPath -Force }
+
+    $fs = [System.IO.File]::Open($DestinationPath, [System.IO.FileMode]::Create)
+    $archive = New-Object System.IO.Compression.ZipArchive($fs, [System.IO.Compression.ZipArchiveMode]::Create)
+    try {
+        Get-ChildItem -Path $SourceDir -Recurse -File -Force | ForEach-Object {
+            $rel = $_.FullName.Substring($rootFull.Length + 1)
+            $segments = $rel -split '[\\/]'
+            if ($segments | Where-Object { $Exclude -contains $_ }) { return }
+            if ($ExcludeFile -contains $_.Name) { return }
+            if ($ExcludeExtension -contains $_.Extension) { return }
+            $entryName = ($segments -join '/')
+            [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $_.FullName, $entryName) | Out-Null
+        }
+    }
+    finally {
+        $archive.Dispose()
+        $fs.Dispose()
+    }
+}
