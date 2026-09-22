@@ -120,6 +120,10 @@ Copy-Item .env.example .env
 #   AZURE_OPENAI_AUTH_MODE  = entra    (keyless, default — no API key)
 ```
 
+> `.env` is used for the **local dev loop** (2.1) only. For the deployed **container** these
+> values are set as **App Settings** on the Web App by `07-Deploy-Container.ps1` (the endpoint is
+> resolved from `-OpenAIName`); `.env` is never baked into the image.
+
 **(Optional) Pre-create the dedicated resource group:**
 
 ```powershell
@@ -160,6 +164,40 @@ Managed Identity:
 .\scripts\07-Deploy-Container.ps1 -OpenAIName <aoai-name> -OpenAIResourceGroup <aoai-rg> -OpenAIDeployment gpt-4o
 ```
 
+**How to fill in the parameters:**
+
+| Parameter | What it is | Example |
+|-----------|------------|---------|
+| `-OpenAIName` | The **Azure OpenAI resource name** (the account name, *not* the endpoint URL). From endpoint `https://demomaire.openai.azure.com/` the name is `demomaire`. | `demomaire` |
+| `-OpenAIResourceGroup` | The resource group **that contains that Azure OpenAI resource** (may differ from the app's RG). | `rg-agent365-demo` |
+| `-OpenAIDeployment` | The **model deployment name** you created in that resource (chat model, e.g. gpt-4o). | `gpt-4o` |
+
+Discover the exact values with:
+
+```powershell
+# List all Azure OpenAI resources you can see: name + resource group + endpoint
+az cognitiveservices account list `
+  --query "[?kind=='OpenAI'].{name:name, rg:resourceGroup, endpoint:properties.endpoint}" -o table
+
+# List the model deployments on that resource (pick the chat deployment name)
+az cognitiveservices account deployment list -n <aoai-name> -g <aoai-rg> `
+  --query "[].{name:name, model:properties.model.name}" -o table
+```
+
+Worked example — if the portal shows an endpoint like
+`https://demomaire.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=...`,
+then `-OpenAIName demomaire`, `-OpenAIDeployment gpt-4o`, and `-OpenAIResourceGroup` is the RG that
+`az cognitiveservices account list` reports for `demomaire`. Full command:
+
+```powershell
+.\scripts\07-Deploy-Container.ps1 -OpenAIName demomaire -OpenAIResourceGroup rg-agent365-demo -OpenAIDeployment gpt-4o
+```
+
+> If your resource is an **Azure AI Foundry** resource (endpoint `...services.ai.azure.com/...`),
+> use the resource **name** for `-OpenAIName` and confirm the `.openai.azure.com` endpoint with
+> `az cognitiveservices account show -n <name> -g <rg> --query properties.endpoint -o tsv`. Do not
+> pass the `/api/projects/...` project URL.
+
 What it does, in order:
 
 1. Creates an **Azure Container Registry** (Basic, admin disabled).
@@ -177,6 +215,12 @@ What it does, in order:
 > script sets it for you.
 
 Useful switches: `-DryRun`, `-SkipOpenAI` (host only), `-AcrName` (reuse an ACR), `-ImageTag`.
+
+> Where the Azure OpenAI endpoint is configured: you do **not** edit `.env` for the container.
+> The script resolves `AZURE_OPENAI_ENDPOINT` from `-OpenAIName` and sets it (plus
+> `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_AUTH_MODE=entra`, `AZURE_OPENAI_CREDENTIAL=managed`) as
+> **App Settings** on the Web App. Change them later with
+> `az webapp config appsettings set -n <app> -g <rg> --settings AZURE_OPENAI_...=...`.
 
 ### 2.3 — Test the agent
 
@@ -236,6 +280,11 @@ The agent appears in the registry with its **Entra Agent ID** (identities 0 → 
 
 Same kit, viewed through the **real CLI commands**: blueprint → deploy → publish → cleanup.
 
+> [!NOTE]
+> This is the **same single deployment** as Part 2, seen from the CLI angle — you do **not** deploy
+> a second container. If you already ran `07-Deploy-Container.ps1` in Part 2, reuse that app and
+> skip 3.2's deploy line.
+
 ### 3.1 — (Optional) Blueprint only, made explicit
 
 ```powershell
@@ -247,8 +296,13 @@ Same kit, viewed through the **real CLI commands**: blueprint → deploy → pub
 
 ### 3.2 — Deploy (container) + blueprint
 
+Skip the first line if you already deployed in Part 2 — just reuse the same app URL:
+
 ```powershell
+# Only if not already deployed in Part 2:
 .\scripts\07-Deploy-Container.ps1 -OpenAIName <aoai-name> -OpenAIResourceGroup <aoai-rg> -OpenAIDeployment gpt-4o
+
+# Then, against the (already deployed) app:
 a365 setup all --m365 --messaging-endpoint https://<app>.azurewebsites.net/api/messages
 a365 setup permissions bot
 ```
