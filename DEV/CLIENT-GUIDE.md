@@ -69,7 +69,7 @@ cd DEV
 
 ## Part 1 — Prerequisites (once, valid for both use cases)
 
-**Required:** Python 3.10+, Azure CLI (`az`), .NET SDK 8+, Agent 365 CLI.
+**Required:** Python 3.10+, Azure CLI (`az`), .NET SDK 8+, **PowerShell 7+ (`pwsh`)**, Agent 365 CLI.
 For the container path you do **not** need local Docker — images are built in the cloud with
 `az acr build`.
 
@@ -100,6 +100,15 @@ This checks/installs `az`, `dotnet`, the Agent 365 CLI
 > $env:Path += ";$env:USERPROFILE\.dotnet\tools"
 > a365 --version
 > ```
+>
+> **The `a365` CLI requires PowerShell 7+ (`pwsh`).** With only Windows PowerShell 5.1,
+> `a365 setup ...` fails the `powershell` requirement check with *"PowerShell is not available on
+> this system"*. Install it and reopen the window:
+> ```powershell
+> winget install --exact --id Microsoft.PowerShell
+> pwsh --version                                    # 7.x
+> a365 setup requirements --category powershell     # should now Pass
+> ```
 
 **Entra/Azure roles needed on the client tenant:**
 
@@ -109,6 +118,18 @@ This checks/installs `az`, `dotnet`, the Agent 365 CLI
 | *Global Administrator* | admin consent + uploading the manifest in the admin center (otherwise the CLI prints a GA hand-off) |
 | *Contributor* (subscription) | provisioning ACR / App Service |
 | *Owner* or *User Access Administrator* | assigning the Azure OpenAI data-plane role (keyless) |
+
+> [!NOTE]
+> **Where Global Administrator is specifically required:**
+> - **OAuth2 admin consent** during `a365 setup all` (blueprint permission grants). Without GA the
+>   CLI still creates the blueprint and inheritable permissions, then writes per-resource consent
+>   URLs to `a365.generated.config.json` for a GA to approve (a hand-off, not an error).
+> - **`--authmode s2s`/`both`** agent-identity grants (needs Application Administrator or GA).
+> - **Uploading `manifest.zip`** in the Microsoft 365 admin center (step 2.5).
+> - **Approving the agent instance** created from Teams (step 2.5).
+>
+> As *Agent ID Developer* you can do everything else; the GA-only steps are clearly flagged in the
+> CLI output and in steps 2.4–2.5 below.
 
 **Configure the agent variables (Azure OpenAI):**
 
@@ -120,9 +141,14 @@ Copy-Item .env.example .env
 #   AZURE_OPENAI_AUTH_MODE  = entra    (keyless, default — no API key)
 ```
 
-> `.env` is used for the **local dev loop** (2.1) only. For the deployed **container** these
-> values are set as **App Settings** on the Web App by `07-Deploy-Container.ps1` (the endpoint is
-> resolved from `-OpenAIName`); `.env` is never baked into the image.
+> **Where the Azure OpenAI variables live depends on where the agent runs:**
+> - **Local dev loop (2.1)** → in `.env` (`AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`,
+>   `AZURE_OPENAI_AUTH_MODE`).
+> - **Container on Azure** → **not** in `.env` (it is excluded from the image via `.dockerignore`).
+>   The `07-Deploy-Container.ps1` script **resolves the endpoint from `-OpenAIName`** and writes it
+>   as an **App Setting** on the Web App, together with `AZURE_OPENAI_DEPLOYMENT`,
+>   `AZURE_OPENAI_AUTH_MODE=entra` and `AZURE_OPENAI_CREDENTIAL=managed`. You do not edit `.env`
+>   for the container deploy.
 
 **(Optional) Pre-create the dedicated resource group:**
 
@@ -168,7 +194,7 @@ Managed Identity:
 
 | Parameter | What it is | Example |
 |-----------|------------|---------|
-| `-OpenAIName` | The **Azure OpenAI resource name** (the account name, *not* the endpoint URL). From endpoint `https://demomaire.openai.azure.com/` the name is `demomaire`. | `demomaire` |
+| `-OpenAIName` | The **Azure OpenAI resource name** (the account name, *not* the endpoint URL). From endpoint `https://contoso-openai.openai.azure.com/` the name is `contoso-openai`. | `contoso-openai` |
 | `-OpenAIResourceGroup` | The resource group **that contains that Azure OpenAI resource** (may differ from the app's RG). | `rg-agent365-demo` |
 | `-OpenAIDeployment` | The **model deployment name** you created in that resource (chat model, e.g. gpt-4o). | `gpt-4o` |
 
@@ -185,12 +211,12 @@ az cognitiveservices account deployment list -n <aoai-name> -g <aoai-rg> `
 ```
 
 Worked example — if the portal shows an endpoint like
-`https://demomaire.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=...`,
-then `-OpenAIName demomaire`, `-OpenAIDeployment gpt-4o`, and `-OpenAIResourceGroup` is the RG that
-`az cognitiveservices account list` reports for `demomaire`. Full command:
+`https://contoso-openai.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=...`,
+then `-OpenAIName contoso-openai`, `-OpenAIDeployment gpt-4o`, and `-OpenAIResourceGroup` is the RG
+that `az cognitiveservices account list` reports for `contoso-openai`. Full command:
 
 ```powershell
-.\scripts\07-Deploy-Container.ps1 -OpenAIName demomaire -OpenAIResourceGroup rg-agent365-demo -OpenAIDeployment gpt-4o
+.\scripts\07-Deploy-Container.ps1 -OpenAIName contoso-openai -OpenAIResourceGroup rg-agent365-demo -OpenAIDeployment gpt-4o
 ```
 
 > If your resource is an **Azure AI Foundry** resource (endpoint `...services.ai.azure.com/...`),
@@ -224,16 +250,23 @@ Useful switches: `-DryRun`, `-SkipOpenAI` (host only), `-AcrName` (reuse an ACR)
 
 ### 2.3 — Test the agent
 
-The script prints the app name/URL. Test from the browser or the terminal:
+The script prints the app name/URL. Get it from the state file it writes (avoids copy/paste of the
+placeholder), then test from the browser or the terminal:
 
 ```powershell
-$app = "<app-name-printed-by-the-script>"
+$app = (Get-Content .\scripts\last-container-deploy.json -Raw | ConvertFrom-Json).appName
+$app   # sanity check: should be the real name, e.g. app-...-ctr-12345
+
 Invoke-RestMethod "https://$app.azurewebsites.net/health"     # {"status":"healthy"}
 
 $body = @{ message = "What time is it in UTC?" } | ConvertTo-Json
 Invoke-RestMethod "https://$app.azurewebsites.net/api/chat" -Method Post -ContentType "application/json" -Body $body
 # expected: { "reply": "The current time in UTC is ..." }
 ```
+
+> Don't paste the literal `<app-name-...>` placeholder into `$app` — that produces
+> *"Invalid URI: The hostname could not be parsed."* Use the state file (above) or
+> `az webapp list -g <rg> --query "[].name" -o table`.
 
 Swagger UI (interactive `POST /api/chat` from the browser): `https://<app>.azurewebsites.net/docs`.
 
@@ -243,6 +276,17 @@ Swagger UI (interactive `POST /api/chat` from the browser): `https://<app>.azure
 
 ### 2.4 — Onboard to Agent 365
 
+> [!IMPORTANT]
+> **Run `a365` in a standalone terminal window** (Windows Terminal / PowerShell from Start), **not**
+> the VS Code integrated terminal. The CLI signs in via **Windows Account Manager (WAM)**, which
+> needs a real console window to show the account picker — in the integrated terminal it often
+> hangs at *"Authenticating via Windows Account Manager..."*. Note: `MSAL_DISABLE_BROKER=1` only
+> affects the Python `az` CLI, **not** the .NET `a365` CLI. If a sign-in window doesn't appear,
+> check the taskbar / Alt+Tab.
+>
+> `a365` also requires **PowerShell 7+** (see Part 1) — otherwise the `powershell` requirement
+> check fails.
+
 Use the `Messaging URL` printed by the deploy script:
 
 ```powershell
@@ -250,6 +294,29 @@ a365 setup all --m365 --messaging-endpoint https://<app>.azurewebsites.net/api/m
 a365 setup permissions bot
 a365 publish        # creates manifest/manifest.zip
 ```
+
+What each command does:
+
+- **`a365 setup all --m365 --messaging-endpoint ...`** — the core onboarding. It validates
+  requirements, creates the **Entra Agent ID blueprint** (application + service principal +
+  client secret), configures **inheritable permissions** (Microsoft Graph, Agent 365 Tools,
+  Messaging Bot, Observability, Power Platform), grants the blueprint permissions (admin-consent
+  in the browser + S2S app roles), **registers the messaging endpoint**, and writes the runtime
+  settings into `.env` / `a365.generated.config.json`. `--m365` registers the endpoint for
+  Teams/Copilot agents.
+- **`a365 setup permissions bot`** — ensures the **Messaging Bot API** permissions are configured
+  on the blueprint (idempotent; safe to re-run — it reports "already configured" if done).
+- **`a365 publish`** — extracts the app **manifest** into `manifest/`, lets you edit it
+  (name, description, icons, version), then packages **`manifest/manifest.zip`** for upload to the
+  Microsoft 365 admin center (step 2.5).
+
+> The client secret printed by `setup all` is stamped into `a365.generated.config.json` (git-ignored).
+> Keep it secret; retrieve it later with `a365 setup blueprint --show-secret` (same folder/machine/user).
+
+> **If you are not a Global Administrator:** `a365 setup all` completes the blueprint and
+> inheritable permissions, then writes per-resource **admin-consent URLs** to
+> `a365.generated.config.json` and prints a GA hand-off in the summary. Send those URLs to a GA to
+> approve — this is expected, not a failure.
 
 **If `setup blueprint` returns "Insufficient privileges":**
 
@@ -398,7 +465,12 @@ Known watch-outs on this path:
 
 ## Watch-outs
 
-- The **WAM broker can hang** → `$env:MSAL_DISABLE_BROKER=1` + `az login --use-device-code`.
+- The **WAM broker can hang** at *"Authenticating via Windows Account Manager..."*. For `az`, set
+  `$env:MSAL_DISABLE_BROKER=1` + `az login --use-device-code`. For the **`a365` CLI (.NET)** that
+  env var has no effect — run it in a **standalone terminal** (not the VS Code integrated terminal)
+  so the WAM account picker can appear.
+- The **`a365` CLI needs PowerShell 7+ (`pwsh`)** — Windows PowerShell 5.1 alone fails the
+  `powershell` requirement check.
 - Notification URL must be `/api/messages`, **not** `/api/chat`.
 - Keyless needs **Cognitive Services OpenAI User** on the Azure OpenAI resource (scripts 07 / 05 / 03
   assign it).

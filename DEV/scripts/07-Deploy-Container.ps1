@@ -47,10 +47,10 @@
     Print the plan without creating anything.
 
 .EXAMPLE
-    .\07-Deploy-Container.ps1 -OpenAIName demomaire
+    .\07-Deploy-Container.ps1 -OpenAIName contoso-openai
 
 .EXAMPLE
-    .\07-Deploy-Container.ps1 -OpenAIName demomaire -OpenAIResourceGroup rg-ai -OpenAIDeployment gpt-4o
+    .\07-Deploy-Container.ps1 -OpenAIName contoso-openai -OpenAIResourceGroup rg-ai -OpenAIDeployment gpt-4o
 #>
 [CmdletBinding()]
 param(
