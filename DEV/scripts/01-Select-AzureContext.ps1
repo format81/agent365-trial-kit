@@ -63,8 +63,11 @@ else {
     Invoke-Native "az" (@("login") + $loginFlow)
 
     Write-Step "Available tenants"
-    $tenants = @(az account list --query "[].{name:name, tenantId:tenantId}" -o json | ConvertFrom-Json |
-        Sort-Object tenantId -Unique)
+    # Capture ConvertFrom-Json to a variable first: in Windows PowerShell 5.1 it
+    # does not enumerate arrays through the pipeline, so piping it directly would
+    # collapse every row into one array element.
+    $tenantsRaw = az account list --query "[].{name:name, tenantId:tenantId}" -o json | ConvertFrom-Json
+    $tenants = @($tenantsRaw | Sort-Object tenantId -Unique)
     if (-not $tenants) { throw "No tenants returned by az account list." }
 
     for ($i = 0; $i -lt $tenants.Count; $i++) {
@@ -79,8 +82,9 @@ else {
 # Step 2: Select subscription
 # ---------------------------------------------------------------------------
 Write-Step "Select an Azure subscription"
-$subs = @(az account list --query "[?tenantId=='$TenantId'].{name:name, id:id, state:state}" -o json |
-    ConvertFrom-Json | Where-Object { $_.state -eq "Enabled" })
+# Capture first (see PS 5.1 note above) so filtering/indexing stays per-row.
+$subsRaw = az account list --query "[?tenantId=='$TenantId'].{name:name, id:id, state:state}" -o json | ConvertFrom-Json
+$subs = @($subsRaw | Where-Object { $_.state -eq "Enabled" })
 if (-not $subs) { throw "No enabled subscriptions found for tenant $TenantId." }
 
 for ($i = 0; $i -lt $subs.Count; $i++) {
@@ -95,7 +99,9 @@ Write-Ok "Active subscription: $($subscription.name)"
 # Step 3: Select or create a resource group
 # ---------------------------------------------------------------------------
 Write-Step "Select or create a resource group"
-$groups = @(az group list --query "[].{name:name, location:location}" -o json | ConvertFrom-Json)
+# Capture first (see PS 5.1 note above) so $groups[i].name stays a scalar.
+$groupsRaw = az group list --query "[].{name:name, location:location}" -o json | ConvertFrom-Json
+$groups = @($groupsRaw)
 if ($groups) {
     for ($i = 0; $i -lt $groups.Count; $i++) {
         Write-Host ("  [{0}] {1}  ({2})" -f $i, $groups[$i].name, $groups[$i].location)
