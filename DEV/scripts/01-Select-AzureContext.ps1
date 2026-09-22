@@ -146,6 +146,20 @@ if ($createNew) {
     Write-Ok "Created resource group '$rgName' in $location."
 }
 
+# Authoritative resolution for an existing RG: re-fetch name+location from Azure
+# by the chosen name so the value can never end up an array / space-joined list
+# of every group. A newly created RG already has correct scalar values.
+if (-not $createNew) {
+    $rgName = "$rgName".Trim()
+    $resolved = az group show --name $rgName --query "{name:name, location:location}" -o json 2>$null | ConvertFrom-Json
+    if (-not $resolved) {
+        throw "Resource group '$rgName' could not be resolved to a single group. Re-run and pick one index, or type one existing resource group name."
+    }
+    $rgName   = $resolved.name
+    $location = $resolved.location
+    Write-Ok "Resolved resource group '$rgName' ($location)."
+}
+
 # ---------------------------------------------------------------------------
 # Step 4: Write a365.config.json from the template
 # ---------------------------------------------------------------------------
