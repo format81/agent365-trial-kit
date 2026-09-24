@@ -287,6 +287,21 @@ Swagger UI (interactive `POST /api/chat` from the browser): `https://<app>.azure
 > `a365` also requires **PowerShell 7+** (see Part 1) — otherwise the `powershell` requirement
 > check fails.
 
+> **Execution mode — this sample runs in OBO, no extra license needed.**
+> Agent 365 agents run in one of three modes
+> ([docs](https://learn.microsoft.com/microsoft-agent-365/developer/identity#permissions-and-runtime-flow)):
+> - **OBO** (on-behalf-of a signed-in user) — `a365 setup all` **default**; no admin role for the grant.
+> - **S2S** (service-to-service; the agent acts as itself with application permissions) —
+>   `a365 setup all --authmode s2s` (needs Application Administrator / Global Administrator).
+> - **Agentic-User (Digital Worker / AI teammate)** — the agent gets its own Entra **user account**
+>   (mailbox, Teams presence). This is the `--aiteammate` flow and **requires the
+>   "Microsoft 365 Frontier for Autopilots" license**.
+>
+> **Use cases 1–2 are blueprint agents in OBO or S2S — they do NOT need the Autopilots license.**
+> For the container sample (the agent only calls Azure OpenAI and returns text), OBO vs S2S is
+> **transparent to the code** — no changes to `src/`, `Dockerfile`, or `requirements.txt`. Switch
+> modes purely on the Agent 365 side with `--authmode` (or set `"authMode"` in `a365.config.json`).
+
 Use the `Messaging URL` printed by the deploy script:
 
 ```powershell
@@ -310,6 +325,14 @@ What each command does:
   (name, description, icons, version), then packages **`manifest/manifest.zip`** for upload to the
   Microsoft 365 admin center (step 2.5).
 
+> **Customize `manifest.json` before uploading:**
+> - **`developer.name` becomes the Publisher** shown in the admin center. If left as the template
+>   default it appears as *"Microsoft Corporation"* — set it to your organization (also
+>   `developer.websiteUrl` / `developer.privacyUrl`).
+> - **Bump `version`** on every re-upload. Uploading the same version fails with
+>   *"Must upload a newer version of the title than what is already present."* Increase it
+>   (e.g. `1.0.0` → `1.0.1`), re-run `a365 publish`, then upload again.
+
 > The client secret printed by `setup all` is stamped into `a365.generated.config.json` (git-ignored).
 > Keep it secret; retrieve it later with `a365 setup blueprint --show-secret` (same folder/machine/user).
 
@@ -327,19 +350,133 @@ What each command does:
 az logout; az login --use-device-code          # refresh the token with the new consent
 ```
 
-### 2.5 — Manual governance gates (by design, not automatable)
+### 2.5 — Create an agent identity (no Teams / Frontier)
 
-1. **Microsoft 365 admin center** → *Agents → Upload custom agent* → upload `manifest/manifest.zip`
-   (requires *Global Administrator*).
-2. **Teams Developer Portal** → configure the blueprint: Agent Type = *API Based*,
-   **Notification URL = `/api/messages`** (⚠️ not `/api/chat`).
-3. **Teams** → create an agent instance → an admin approves it. Only then is the **Agent Identity**
-   created (a fresh blueprint shows *Agent identities: 0* — that's expected). Requires the tenant
-   enrolled in **Frontier**.
+Your use cases 1–2 only need a **blueprint + at least one agent identity** — you do **not** need the
+Teams "Create instance" flow (which is Frontier-gated). Create an identity directly in Entra Agent
+ID so the registry no longer shows *0*:
 
-### 2.6 — Verify
+```powershell
+.\scripts\09-New-AgentIdentity.ps1
+# options: -DisplayName "<name>"  -SponsorUpn <user@tenant>  -UseDeviceCode  -Force
+```
 
-The agent appears in the registry with its **Entra Agent ID** (identities 0 → 1).
+What it does:
+- Reads the current blueprint id from `a365.generated.config.json` — so it works on **every run of
+  the flow**, against whatever blueprint was just created.
+- Signs in to **Microsoft Graph** (`Connect-MgGraph`) — required because Azure CLI tokens are
+  rejected by the Agent Identity APIs (403).
+- Creates an **agent identity** under the blueprint, sponsored by the signed-in user, and is
+  **idempotent** (skips if one with the same name already exists; `-Force` adds another).
+
+> On the **first run** with `-UseDeviceCode` expect **two device codes** at
+> <https://login.microsoft.com/device>: the first is the **sign-in**, the second grants **admin
+> consent** for the `AgentIdentity.*` scopes (needs a GA). Complete **both** — stopping after the
+> first makes the script exit before creating the identity. Subsequent runs need only one.
+
+Verify in Entra: **entra.microsoft.com → Entra ID → Agents → Agent identities** — the blueprint now
+shows **1**. Needs **AgentIdentity.Create.All** (admin consent on first run) and a **user** sponsor.
+No Teams, no Frontier, no Autopilots license.
+
+> The agent's optional **user account** (mailbox / Teams presence) is a separate object that *does*
+> require Frontier — creating an agent identity (service principal) does not.
+
+### 2.6 — Manual governance gates (only needed to use it in Teams)
+
+> These gates are required only to **consume the agent in Teams/Copilot**. For use cases 1–2
+> (onboarding + lifecycle) they are optional — step 2.5 already gives you a blueprint + agent
+> identity.
+
+Up to `a365 publish` you only have a **blueprint** (an IT-approved *template*) and a `manifest.zip`.
+These gates turn that template into a **usable, governed agent in Teams**. They are human/admin
+approval checkpoints — your CI/CD stops at `manifest.zip`.
+
+**Gate 1 — Upload `manifest.zip` in the Microsoft 365 admin center** *(requires Global Administrator)*
+- Go to <https://admin.microsoft.com> → **Agents → All agents → Upload custom agent** → upload
+  `manifest/manifest.zip`.
+- The ZIP (`manifest.json` + `color.png` 192×192 + `outline.png` 32×32) is validated; you then set
+  **availability** (which users/groups can install — you can scope to "Just me" or a test group),
+  optionally apply a **security/policy template** (DLP, protections), review permissions, and
+  **Finish deployment**.
+- Result: the agent enters the tenant **Agent Registry** (where admins can block/delete/assign
+  owner/apply policy) and appears in the "Agents for your team" store (Teams / Copilot).
+
+**Gate 2 — Configure the blueprint in the Teams Developer Portal**
+Without this the agent **won't receive messages** and **won't appear in Teams**.
+- Get `agentBlueprintId` and `messagingEndpoint` from `a365.generated.config.json`:
+  ```powershell
+  Get-Content .\a365.generated.config.json | ConvertFrom-Json |
+    Select-Object agentBlueprintId, messagingEndpoint
+  ```
+  If `messagingEndpoint` is empty (it isn't always stamped into the generated config), it is simply
+  `https://<your-app>.azurewebsites.net/api/messages` — the URL you passed to `a365 setup all`. Get
+  it from the container deploy state file:
+  ```powershell
+  (Get-Content .\scripts\last-container-deploy.json -Raw | ConvertFrom-Json).messagingEndpoint
+  ```
+- Open `https://dev.teams.microsoft.com/tools/agent-blueprint/<agentBlueprintId>/configuration`.
+- Set **Agent Type = API Based**; set **Notification URL** = the `messagingEndpoint`
+  (your `/api/messages`). **Save**, then wait 5–10 min for propagation.
+- ⚠️ It is `/api/messages` (the platform → agent notification endpoint), **not** `/api/chat`
+  (that one is only for your own testing).
+
+> **Three different blueprint IDs (all correct, not a mismatch):**
+> - **`agentBlueprintId`** (in `a365.generated.config.json`) — the platform identifier used in the
+>   **Developer Portal URL** and the admin center. Use this one here.
+> - **`agentBlueprintObjectId`** — the **Entra application** backing the blueprint (shown in the
+>   Entra portal as *Blueprint app ID / object ID*). Often equal to `agentBlueprintId`.
+> - **blueprint service principal object ID** (`agentBlueprintServicePrincipalObjectId`) — the
+>   blueprint's **service principal** (Entra: *Blueprint principal object ID*), the runtime that
+>   creates/manages agent instances.
+>
+> A blueprint is backed by an Entra **application + service principal** (like app registration ↔
+> SP), and many agent identities can share one blueprint. If your config shows a different value
+> than the Entra portal, you likely have **stale generated config from an earlier run** — confirm
+> with `Get-Content .\a365.generated.config.json | ConvertFrom-Json | Select-Object agentBlueprintId, agentBlueprintObjectId`.
+
+**Gate 3 — Make it available in Teams (two paths)**
+
+The path depends on whether the agent is a Digital Worker or not.
+
+**Path A — Non-DW agent (OBO / S2S): recommended for use cases 1–2, no Autopilots license.**
+- After Gate 2 propagates, the agent appears in **Teams → Apps**. Add it with **Add** (the normal
+  app-add flow) — there is **no "Create Instance"** for non-DW agents, and **no Frontier for
+  Autopilots** license is required.
+- To actually chat in Teams the agent must handle `/api/messages`; the kit ships a **stub** there,
+  so for the trial the real agent validation is the direct **`/api/chat`** call (step 2.3). `Add`
+  confirms discovery + governance, not conversational round-trips.
+
+**Path B — Digital Worker (Agentic-User / AI teammate): needs Frontier for Autopilots.**
+- The user opens the agent in the store ("Agents for your team") and clicks **Create Instance** →
+  a request goes to the admin, who approves it in the admin center → **Agents → Requests**
+  (`https://admin.cloud.microsoft/#/agents/all/requested`).
+- **Only on approval** does Teams create the **instance** and its **Agent Identity** (an
+  Entra-backed identity with its own user/mailbox). That's why a fresh blueprint shows
+  *Agent identities: 0* until approval — the identity is created **on approval**. The instance
+  **inherits the blueprint's policies** (permissions, DLP, logging).
+- **Requires the tenant enrolled in Frontier + the "Microsoft 365 Frontier for Autopilots"
+  license** assigned to the creating user. If you see *"You don't have the required license to
+  create this agent"*, you are on this path without that license — use **Path A** instead, or
+  acquire the Autopilots license. See <https://adoption.microsoft.com/copilot/frontier-program/>.
+
+Mental model:
+```text
+manifest.zip → [Gate 1: upload in admin center]         → template in the registry/store
+             → [Gate 2: Dev Portal, /api/messages]      → agent receives messages, shows in Teams
+             → [Gate 3: Request Instance + admin approve]→ Agent Identity created, policies inherited
+```
+
+References: [Publish agent](https://learn.microsoft.com/microsoft-agent-365/developer/publish#upload-to-admin-center) ·
+[Create agent instances](https://learn.microsoft.com/microsoft-agent-365/developer/create-instance) ·
+[Onboard (Frontier)](https://learn.microsoft.com/microsoft-agent-365/onboard)
+
+### 2.7 — Verify
+
+- **Blueprint + agent identity (use cases 1–2):** after step 2.5 the blueprint shows **1** agent
+  identity in **Entra → Agents → Agent identities**, and the container answers **`/api/chat`** (2.3).
+  No Teams/Frontier needed.
+- **Digital Worker path (optional):** after an instance is approved in Teams, the agent appears with
+  its own **Agent Identity + user account** (Frontier).
 
 ---
 

@@ -1,0 +1,21 @@
+{
+  "//": "Template for the Agent 365 CLI (a365) configuration file.",
+  "//preview": "Microsoft Agent 365 is in PREVIEW. Fields may change between CLI versions. Run \u0027a365 setup all -h\u0027 to confirm the current schema.",
+  "//usage": "01-Select-AzureContext.ps1 fills tenantId/subscriptionId/resourceGroup and derives the display names, then writes a365.config.json.",
+  "agentName": "PRISM day9",
+  "agentIdentityDisplayName": "PRISM day9 Identity",
+  "agentBlueprintDisplayName": "PRISM day9 Blueprint",
+  "agentDescription": "PRISM day9 - LangChain agent onboarded to Agent 365.",
+  "environment": "prod",
+  "tenantId": "a58672dd-ef3b-4a30-b275-a0aece16ae04",
+  "subscriptionId": "c528ac1e-7711-4c71-a586-f499b96e3326",
+  "resourceGroup": "rg-day9",
+  "location": "westeurope",
+  "//deploymentProjectPath": "Path to the agent project that gets deployed to Azure App Service.",
+  "deploymentProjectPath": "./",
+  "//authMode": "obo = delegated (default, no admin role) | s2s = app permissions | both",
+  "authMode": "obo",
+  "//messagingEndpoint": "HTTPS URL where the deployed agent receives messages. Known only AFTER first deploy; register later with \u0027a365 setup blueprint --endpoint-only\u0027.",
+  "messagingEndpoint": "",
+  "clientAppId": "7aa977bf-7e0c-43c4-b63f-3405b5cfc31e"
+}
